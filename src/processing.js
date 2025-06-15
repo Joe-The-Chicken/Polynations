@@ -263,6 +263,10 @@ function logg(text) {
 }
 
 function changeName() {
+    if(selectedId <= 0) {
+        return;
+    }
+
     let prompt = window.prompt("What would you like to change the name of this country to?");
 
     if(prompt != null && prompt != "") {
