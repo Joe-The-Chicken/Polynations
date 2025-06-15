@@ -4,7 +4,6 @@ WASD/Arrow Keys - Move
 Click - Draw / Select Country
 
 # Planned Features
- - Renamable countries
  - More maps
  - Water paths / boats
  - Soundtrack

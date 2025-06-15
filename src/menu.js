@@ -22,7 +22,7 @@ const mapData = {
     eu : {
         name: "Europe",
         dimensions: [0,0],
-        data: []
+        data: ""
     },
     w : {
         name: "World",
