@@ -39,7 +39,6 @@ const menus = {
     "maps" : [
         new itm("Back","menu","main"),
         new itm("North America","start","game.html?map=" + btoa(JSON.stringify(mapData.usa))),
-        new itm("Europe","start","game.html?map=" + btoa(JSON.stringify(mapData.eu))),
         new itm("World","start","game.html?map=" + btoa(JSON.stringify(mapData.w)))
     ],
     "settings" : [
