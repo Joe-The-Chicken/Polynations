@@ -263,7 +263,7 @@ function logg(text) {
 }
 
 function changeName() {
-    if(selectedId <= 0) {
+    if(selectedId <= 0 || countries[selectedId].size == 0) {
         return;
     }
 
