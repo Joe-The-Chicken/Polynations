@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Polynations - Game</title>
+        <link rel="stylesheet" href="style/game.css">
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <div id="fadeOverlay"></div>
+        <div id="bottom">
+            <div class="container">
+                <h1>Painter</h1>
+                <div id="s">
+                    <div id="color">
+                        <button id="btnl"></button>
+                        <button id="btnr"></button>
+                    </div>
+                    <button id="btne">🗑️</button>
+                    <button id="btnw">💧</button>
+                    <button id="btnpn">🖌️</button>
+                </div>
+            </div>
+            <div class="container">
+                <h1>Gameplay</h1>
+                <div id="s">
+                    <button id="btnp" onclick="pause()">GO</button>
+                    <button id="btnsp" onclick="speed()">1x</button>
+                </div>
+            </div>
+            <div class="container">
+                <h1>Data</h1>
+                <p id="lname">Name: N/A</p>
+                <p id="lsize">Size: N/A</p>
+            </div>
+            <div class="container">
+                <h1>Logs</h1>
+                <pre id="logs">
+...
+                </pre>
+            </div>
+            <div class="container"></div>
+        </div>
+        <script src="src/files.js"></script>
+        <script src="src/game.js"></script>
+        <script src="src/painter.js"></script>
+        <script src="src/processing.js"></script>
+        <script src="src/namecreator.js"></script>
+        <script src="src/hover.js"></script>
+    </body>
+</html>
