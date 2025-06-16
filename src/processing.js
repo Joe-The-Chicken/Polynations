@@ -74,6 +74,38 @@ function findBorderCells(world) {
   return list;
 }
 
+function removeSolo() {
+  borderCountries = {};
+
+  const rows = world.length, cols = world[0].length, list = [];
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const id = world[r][c];
+
+      let friendCount = 0;
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+        if (world[nr][nc] === id) friendCount++;
+      }
+
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+        const nid = world[nr][nc];
+
+        if(friendCount <= 1) {
+            world[r][c] = nid;
+            mapCtx.fillStyle = colors[nid];
+            mapCtx.fillRect(c, r, 1, 1);
+        }
+      }
+    }
+  }
+  render();
+}
+
 function processCells() {
   const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
   const borderCells = findBorderCells(world); // [[r,c], …]

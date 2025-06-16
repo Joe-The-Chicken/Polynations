@@ -21,8 +21,8 @@ const mapData = {
     },
     eu : {
         name: "Europe",
-        dimensions: [0,0],
-        data: ""
+        dimensions: [512,483],
+        data: "eu"
     },
     w : {
         name: "World",
@@ -38,8 +38,9 @@ const menus = {
     ],
     "maps" : [
         new itm("Back","menu","main"),
+        new itm("World","start","game.html?map=" + btoa(JSON.stringify(mapData.w))),
         new itm("North America","start","game.html?map=" + btoa(JSON.stringify(mapData.usa))),
-        new itm("World","start","game.html?map=" + btoa(JSON.stringify(mapData.w)))
+        new itm("Europe","start","game.html?map=" + btoa(JSON.stringify(mapData.eu)))
     ],
     "settings" : [
         new itm("Back","menu","main")

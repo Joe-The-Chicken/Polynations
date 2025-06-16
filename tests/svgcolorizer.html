@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SVG Random Colorizer with Download & Fixed Palette</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  svg { border: 1px solid #ccc; max-width: 100%; height: auto; display: block; margin-top: 20px;}
+  button { margin-right: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Upload an SVG file</h2>
+<input type="file" id="svgUpload" accept=".svg" />
+<br/><br/>
+<button id="colorBtn" disabled>Color SVG Elements</button>
+<button id="downloadBtn" disabled>Download SVG</button>
+
+<div id="svgContainer"></div>
+
+<script>
+// 64 vivid distinct colors grouped in 8 groups of 8 hues
+const colorPalette = Object.values({
+  "1": "#0000aa",
+  "2": "#00aa00",
+  "3": "#00aaaa",
+  "4": "#aa0000",
+  "5": "#aa00aa",
+  "6": "#aaaa00",
+  "7": "#aaaaaa",
+  "8": "#000055",
+  "9": "#0000ff",
+  "10": "#00aa55",
+  "11": "#00aaff",
+  "12": "#aa0055",
+  "13": "#aa00ff",
+  "14": "#aaaa55",
+  "15": "#aaaaff",
+  "16": "#005500",
+  "17": "#0055aa",
+  "18": "#00ff00",
+  "19": "#00ffaa",
+  "20": "#aa5500",
+  "21": "#aa55aa",
+  "22": "#aaff00",
+  "23": "#aaffaa",
+  "24": "#005555",
+  "25": "#0055ff",
+  "26": "#00ff55",
+  "27": "#00ffff",
+  "28": "#aa5555",
+  "29": "#aa55ff",
+  "30": "#aaff55",
+  "31": "#aaffff",
+  "32": "#550000",
+  "33": "#5500aa",
+  "34": "#55aa00",
+  "35": "#55aaaa",
+  "36": "#ff0000",
+  "37": "#ff00aa",
+  "38": "#ffaa00",
+  "39": "#ffaaaa",
+  "40": "#550055",
+  "41": "#5500ff",
+  "42": "#55aa55",
+  "43": "#55aaff",
+  "44": "#ff0055",
+  "45": "#ff00ff",
+  "46": "#ffaa55",
+  "47": "#ffaaff",
+  "48": "#555500",
+  "49": "#5555aa",
+  "50": "#55ff00",
+  "51": "#55ffaa",
+  "52": "#ff5500",
+  "53": "#ff55aa",
+  "54": "#ffff00",
+  "55": "#ffffaa",
+  "56": "#555555",
+  "57": "#5555ff",
+  "58": "#55ff55",
+  "59": "#55ffff",
+  "60": "#ff5555",
+  "61": "#ff55ff",
+  "62": "#ffff55"
+});
+
+// Pick a random color from the palette
+function randomColor() {
+  const idx = Math.floor(Math.random() * colorPalette.length);
+  return colorPalette[idx];
+}
+
+function parseStyle(styleString) {
+  const style = {};
+  if (!styleString) return style;
+  styleString.split(';').forEach(part => {
+    const [key, value] = part.split(':').map(s => s && s.trim());
+    if (key && value) style[key] = value;
+  });
+  return style;
+}
+
+function styleToString(styleObj) {
+  return Object.entries(styleObj)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join('; ');
+}
+
+function colorSvgElements(svg) {
+  const elements = svg.querySelectorAll('*');
+  let colorIndex = 0;
+
+  elements.forEach(el => {
+    let fill = el.getAttribute('fill');
+    const style = parseStyle(el.getAttribute('style'));
+
+    if ((!fill || fill.toLowerCase() === 'none') && style.fill) {
+      fill = style.fill;
+    }
+
+    if (fill && fill.toLowerCase() !== 'none') {
+      const newColor = colorPalette[colorIndex % colorPalette.length];
+      colorIndex++;
+
+      if (el.hasAttribute('fill')) {
+        el.setAttribute('fill', newColor);
+      }
+      if (style.fill) {
+        style.fill = newColor;
+      }
+
+      if (el.hasAttribute('stroke')) {
+        el.setAttribute('stroke', newColor);
+      } else if (style.stroke) {
+        style.stroke = newColor;
+      } else {
+        el.setAttribute('stroke', newColor);
+      }
+
+      if (Object.keys(style).length > 0) {
+        el.setAttribute('style', styleToString(style));
+      }
+    }
+  });
+}
+
+
+const fileInput = document.getElementById('svgUpload');
+const colorBtn = document.getElementById('colorBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const svgContainer = document.getElementById('svgContainer');
+let currentSvg = null;
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    svgContainer.innerHTML = e.target.result;
+    currentSvg = svgContainer.querySelector('svg');
+
+    if (currentSvg) {
+      colorBtn.disabled = false;
+      downloadBtn.disabled = false;
+    } else {
+      colorBtn.disabled = true;
+      downloadBtn.disabled = true;
+      alert('No valid SVG found in file.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+colorBtn.addEventListener('click', () => {
+  if (!currentSvg) return;
+  colorSvgElements(currentSvg);
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!currentSvg) return;
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(currentSvg);
+
+  if (!source.match(/^<\?xml/)) {
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+  }
+
+  const blob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'colored-image.svg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+});
+</script>
+
+</body>
+</html>

@@ -80,7 +80,7 @@ const colors = {
 let countries = {}
 for(const country of Object.keys(colors)) {
     countries[country] = {
-        name: "N/A",
+        name: generateName(),
         size: "N/A",
         enemies: [],
         allies: [],

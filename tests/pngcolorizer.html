@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PNG Palette Limiter</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  canvas { border: 1px solid #ccc; margin-top: 20px; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+
+<h2>Upload a PNG file</h2>
+<input type="file" id="pngUpload" accept="image/png" />
+<br /><br />
+<button id="processBtn" disabled>Limit Colors & Change Black to White</button>
+
+<br />
+<canvas id="canvas"></canvas>
+
+<script>
+// Your 48-color palette (hex), same as previous
+const colorPaletteHex = Object.values({
+  "1": "#0000aa",
+  "2": "#00aa00",
+  "3": "#00aaaa",
+  "4": "#aa0000",
+  "5": "#aa00aa",
+  "6": "#aaaa00",
+  "7": "#aaaaaa",
+  "8": "#000055",
+  "9": "#0000ff",
+  "10": "#00aa55",
+  "11": "#00aaff",
+  "12": "#aa0055",
+  "13": "#aa00ff",
+  "14": "#aaaa55",
+  "15": "#aaaaff",
+  "16": "#005500",
+  "17": "#0055aa",
+  "18": "#00ff00",
+  "19": "#00ffaa",
+  "20": "#aa5500",
+  "21": "#aa55aa",
+  "22": "#aaff00",
+  "23": "#aaffaa",
+  "24": "#005555",
+  "25": "#0055ff",
+  "26": "#00ff55",
+  "27": "#00ffff",
+  "28": "#aa5555",
+  "29": "#aa55ff",
+  "30": "#aaff55",
+  "31": "#aaffff",
+  "32": "#550000",
+  "33": "#5500aa",
+  "34": "#55aa00",
+  "35": "#55aaaa",
+  "36": "#ff0000",
+  "37": "#ff00aa",
+  "38": "#ffaa00",
+  "39": "#ffaaaa",
+  "40": "#550055",
+  "41": "#5500ff",
+  "42": "#55aa55",
+  "43": "#55aaff",
+  "44": "#ff0055",
+  "45": "#ff00ff",
+  "46": "#ffaa55",
+  "47": "#ffaaff",
+  "48": "#555500",
+  "49": "#5555aa",
+  "50": "#55ff00",
+  "51": "#55ffaa",
+  "52": "#ff5500",
+  "53": "#ff55aa",
+  "54": "#ffff00",
+  "55": "#ffffaa",
+  "56": "#555555",
+  "57": "#5555ff",
+  "58": "#55ff55",
+  "59": "#55ffff",
+  "60": "#ff5555",
+  "61": "#ff55ff",
+  "62": "#ffff55"
+});
+
+// Convert hex to RGB array [r,g,b]
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/, '');
+  return [
+    parseInt(hex.substring(0, 2), 16),
+    parseInt(hex.substring(2, 4), 16),
+    parseInt(hex.substring(4, 6), 16),
+  ];
+}
+
+// Precompute RGB palette
+const colorPalette = colorPaletteHex.map(hexToRgb);
+
+// Euclidean distance between two colors
+function colorDistance(c1, c2) {
+  return Math.sqrt(
+    (c1[0] - c2[0]) ** 2 +
+    (c1[1] - c2[1]) ** 2 +
+    (c1[2] - c2[2]) ** 2
+  );
+}
+
+// Find closest palette color to given RGB
+function closestColor(rgb) {
+  let minDist = Infinity;
+  let closest = null;
+  for (const c of colorPalette) {
+    const dist = colorDistance(rgb, c);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = c;
+    }
+  }
+  return closest;
+}
+
+const fileInput = document.getElementById('pngUpload');
+const processBtn = document.getElementById('processBtn');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let img = new Image();
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    // Set canvas size to image size
+    canvas.width = img.width;
+    canvas.height = img.height;
+    // Draw image on canvas
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    processBtn.disabled = false;
+  };
+  img.src = url;
+});
+
+processBtn.addEventListener('click', () => {
+  if (!img.complete) return;
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+
+    // If pixel is grayscale (r = g = b), change to white
+    if (r === g && g === b) {
+      data[i] = 255;
+      data[i + 1] = 255;
+      data[i + 2] = 255;
+      continue;
+    }
+
+    // Find closest palette color
+    const [nr, ng, nb] = closestColor([r, g, b]);
+    data[i] = nr;
+    data[i + 1] = ng;
+    data[i + 2] = nb;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+});
+
+</script>
+
+</body>
+</html>
