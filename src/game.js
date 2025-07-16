@@ -84,7 +84,8 @@ for(const country of Object.keys(colors)) {
         size: "N/A",
         enemies: [],
         allies: [],
-        capital: []
+        capital: [],
+        coins: 0
     }
 }
 
@@ -352,7 +353,7 @@ function updateTooltip() {
   }
   else {
     const info = countries[String(id)];
-    label = info && info.name !== 'N/A' ? info.name : '';  // fall back to blank if unset
+    label = info && info.name !== 'N/A' ? `${info.name} - $${(info.coins).toLocaleString('en-US')}` : '';  // fall back to blank if unset
     tooltip.style.background = `color-mix(in hsl, ${colors[String(id)]}, black 20%)`;
   }
 

@@ -142,8 +142,12 @@ h1 {
     opacity: 0.8;
 }
 
-#logs {
+.small {
     font-size: 10px;
     font-weight: 400;
     letter-spacing: 0.5px;
+}
+
+#leaderboard:hover {
+    cursor: pointer;
 }

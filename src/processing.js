@@ -1,9 +1,12 @@
 let paused = true;
 let speedid = 0;
 let logs = [];
+let tick = 0;
 const pauser = document.getElementById("btnp");
 const speeder = document.getElementById("btnsp");
 const logger = document.getElementById("logs")
+
+const CAPTURE_COST = 25;   // $10 per tile captured
 
 pauser.style.backgroundColor = "#2eff77";
 speeder.style.backgroundColor = "gold";
@@ -130,9 +133,10 @@ function processCells() {
 
       const nid = world[nr][nc];
 
-      /* ---- 1. colonise blank land (white) ----------------------- */
+      /* ---- 1. colonise blank land (white) --------------------- */
       if (nid === 0) {
         if (Math.random() > 0.5) {
+
           world[nr][nc] = attacker;
           mapCtx.fillStyle = colors[attacker];
           mapCtx.fillRect(nc, nr, 1, 1);
@@ -140,7 +144,9 @@ function processCells() {
         continue;
       }
 
-      /* ---- 2. attack enemy territory ---------------------------- */
+      if(atkCountry.coins < curveSize(countries[attacker].size) * 10) {continue;}
+      
+      /* ---- 2. attack enemy territory -------------------------- */
       if (!atkCountry.enemies.includes(String(nid))) continue;
 
       const defCountry = countries[nid];
@@ -151,15 +157,15 @@ function processCells() {
       const sizeRatio  = atkSize / (atkSize + defSize); // 0..1
       let   chance     = base * friendCount * sizeRatio;
 
-      /* is target the defender's capital? -> 2× harder */
-      const cap = defCountry.capital; // [row,col] or undefined
-      const isCapital =
-        cap && cap[0] === nr && cap[1] === nc;
-
-      if (isCapital) chance *= 0.5;    // 2× more difficult
+      const cap = defCountry.capital;
+      const isCapital = cap && cap[0] === nr && cap[1] === nc;
+      if (isCapital) chance *= 0.5;    // 2× harder
 
       if (friendCount >= 2 && Math.random() < chance) {
-        /* --- capture succeeds ----------------------------------- */
+        /* --- capture succeeds --------------------------------- */
+        if (atkCountry.coins < CAPTURE_COST) continue;   // can’t pay
+        atkCountry.coins -= CAPTURE_COST;
+
         if (isCapital) {
           /* wipe the entire defender country to white (0) */
           for (let yy = 0; yy < rows; yy++) {
@@ -171,10 +177,9 @@ function processCells() {
               }
             }
           }
-          defCountry.size = 0;             // they’re gone
-          logg(countries[attacker].name + " has destroyed " + countries[nid].name + "!");
+          defCountry.size = 0;
+          logg(`${atkCountry.name} has destroyed ${defCountry.name}!`);
         } else {
-          /* normal tile takeover */
           world[nr][nc] = attacker;
           mapCtx.fillStyle = colors[attacker];
           mapCtx.fillRect(nc, nr, 1, 1);
@@ -222,7 +227,7 @@ function processRelations() {
         if(c1 != c2) {
             if(borderCountries[c1] && borderCountries[c1].includes(parseInt(c2))) {
                 if(!countries[c1].allies.includes(c2)) {
-                    if(!countries[c1].enemies.includes(c2)) {
+                    if(!countries[c1].enemies.includes(c2) && Object.keys(borderCountries).length > 2) {
                         countries[c1].allies.push(c2);
                         countries[c2].allies.push(c1);
                         logg(countries[c1].name + " has become allies with " + countries[c2].name + "!");
@@ -265,6 +270,17 @@ function getSizes() {
     }
 }
 
+function processIncome() {
+    for(const country in countries) {
+        if(countries[country].size == "N/A") {continue;}
+        countries[country].coins += curveSize(countries[country].size);
+    }
+}
+
+function curveSize(n) {
+    return Math.floor(n / 5);
+}
+
 function run() {
     let thisSpeedID = speedid;
     const expansionLoop = setInterval(() => {
@@ -278,6 +294,11 @@ function run() {
         }
         processCells();
         processRelations();
+
+        if(tick % 5 == 0) {
+            processIncome();
+        }
+        tick++;
     }, 200 / speedList[speedid]);
 }
 

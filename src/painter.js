@@ -19,12 +19,32 @@ const maxId = 62;
 let selectedId = minId;
 let lastColor = 1;
 
+let leaderboard = 0;
+const boards = ["Size", "Coins"];
+
+const lButton = document.getElementById("leaderboard");
+const l1 = document.getElementById("l1");
+const l2 = document.getElementById("l2");
+const l3 = document.getElementById("l3");
+
 function refreshSwatch() {
   display.style.background = colors[selectedId];
   waterBtn.className = "";
   eraseBtn.className = "";
 
   refreshStats()
+}
+
+function getTop3(s) {
+  return Object.entries(countries)          // [ [id, obj], … ]
+    .filter(([, c]) => Number.isFinite(c[s])) // keep only those with a numeric stat
+    .sort(([, a], [, b]) => b[s] - a[s])      // descending by the stat
+    .slice(0, 3)                              // top 3 entries
+    .map(([id]) => Number(id));               // return just the IDs as numbers
+}
+
+function switchRank() {
+  leaderboard++;
 }
 
 function refreshStats() {
@@ -36,6 +56,13 @@ function refreshStats() {
     } else {
       size.textContent = `Size: ${countries[selectedId].size} (${Math.floor((countries[selectedId].size/worldSize) * 10000) / 100}%)`;
     }
+
+    let t = getTop3(boards[(leaderboard % boards.length)].toLowerCase());
+
+    lButton.textContent = `Stats (${boards[leaderboard % boards.length]})`;
+    if(t.length > 0) {l1.textContent = countries[t[0]].name + " - " + countries[t[0]][boards[(leaderboard % boards.length)].toLowerCase()].toLocaleString('en-us');}
+    if(t.length > 1) {l2.textContent = countries[t[1]].name + " - " + countries[t[1]][boards[(leaderboard % boards.length)].toLowerCase()].toLocaleString('en-us');}
+    if(t.length > 2) {l3.textContent = countries[t[2]].name + " - " + countries[t[2]][boards[(leaderboard % boards.length)].toLowerCase()].toLocaleString('en-us');}
 }
 
 refreshSwatch();
