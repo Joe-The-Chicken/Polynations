@@ -1,5 +1,5 @@
 # Polynations
-Polynations is a slightly dumbed-down version of Ages pf Conflict where you simulate diplomacy and wars in fake universes. The controls are pretty simple:
+Polynations is a slightly dumbed-down version of Ages of Conflict where you simulate diplomacy and wars in fake universes. The controls are pretty simple:
 WASD/Arrow Keys - Move
 Click - Draw / Select Country
 
